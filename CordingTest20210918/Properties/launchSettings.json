@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CordingTest20210918": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\y-kf_\\Downloads\\test.txt 2 1"
+    }
+  }
+}
