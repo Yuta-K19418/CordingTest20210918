@@ -1,28 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace CordingTest20210918
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            StreamReader sr = new StreamReader(@args[0]);
+            int timeOutCount = Int32.Parse(args[1]);
+            int lastNumberOfTimes = Int32.Parse(args[2]);
+            int reactionTime = Int32.Parse(args[3]);
+            string output = OutputPeriodOfBrokenServer(args[0], timeOutCount, lastNumberOfTimes, reactionTime);
+            Console.WriteLine(output);
+        }
+
+        public static string OutputPeriodOfBrokenServer(string inputFilePath,
+                                                        int timeOutCount,
+                                                        int lastNumberOfTimes,
+                                                        int reactionTime)
+        {
+            StreamReader sr = new StreamReader(@inputFilePath);
             var startTimeDic = new Dictionary<string, DateTime>();
             var endTimeDic = new Dictionary<string, DateTime>();
             var brokenServerDic = new Dictionary<string, TimeSpan>();
             var pingCountDic = new Dictionary<string, int>();
-            int timeOutCount = Int32.Parse(args[1]);
-            int reactionTime = Int32.Parse(args[2]);
+            var readPinglist = new List<string>();
             string format = "yyyyMMddHHmmss";
             int number;
+            var output = new StringBuilder();
 
             while (!sr.EndOfStream)
             {
                 string line = sr.ReadLine();
                 string[] values = line.Split(',');
-                
+
+
+
                 // タイムアウトの場合
                 if (values[2] == "-")
                 {
@@ -39,7 +54,7 @@ namespace CordingTest20210918
                     }
                 }
                 // 応答がある場合
-                else if(int.TryParse(values[2], out number))
+                else if (int.TryParse(values[2], out number))
                 {
                     if (pingCountDic.ContainsKey(values[1]))
                     {
@@ -58,8 +73,10 @@ namespace CordingTest20210918
 
             foreach (var pair in brokenServerDic)
             {
-                Console.WriteLine($"故障状態のサーバアドレス：{pair.Key}, 故障期間：{pair.Value.ToString()}");
+                output.Append($"故障状態のサーバアドレス：{pair.Key}, 故障期間：{pair.Value.ToString()}\r\n");
             }
+
+            return output.ToString().TrimEnd('\r', '\n');
         }
     }
 }

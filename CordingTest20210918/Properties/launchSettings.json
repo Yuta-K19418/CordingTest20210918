@@ -2,7 +2,7 @@
   "profiles": {
     "CordingTest20210918": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\y-kf_\\Downloads\\test.txt 2 1"
+      "commandLineArgs": "D:\\C#\\C#project\\source\\repos\\CordingTest20210918\\UnitTest\\test1.txt 2 3 1"
     }
   }
 }
