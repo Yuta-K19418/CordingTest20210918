@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,8 @@ namespace CordingTest20210918
             public string ServerAddress { get; set; }
 
             public int? ReactionMiliSecond { get; set; }
+
+            public string Subnet { get; set; }
         }
 
         public static string OutputPeriodOfBrokenServer(string inputFilePath,
@@ -77,7 +80,8 @@ namespace CordingTest20210918
                     {
                         LogTime = DateTime.ParseExact(values[0], format, null),
                         ServerAddress = values[1],
-                        ReactionMiliSecond = null
+                        ReactionMiliSecond = null,
+                        Subnet = GetSubnetAddress(values[1])
                     });
                 }
                 // 応答がある場合
@@ -132,6 +136,39 @@ namespace CordingTest20210918
             }
 
             return output.ToString().TrimEnd('\r', '\n');
+        }
+
+        private static string GetSubnetAddress(string serverAddress)
+        {
+            int subnet = int.Parse(serverAddress.Split('/')[1]);
+            var binaryList = new List<string>();
+            foreach (string value in serverAddress.Split('/')[0].Split('.'))
+            {
+                binaryList.Add(Convert.ToString(int.Parse(value), 2).PadLeft(8, '0'));
+            }
+
+            StringBuilder sb = new StringBuilder(string.Join("", binaryList));
+            sb.Remove(subnet - 1, 32 - subnet);
+            for (int i = subnet; i < string.Join("", binaryList).Length; i++)
+            {
+                sb.Append("0");
+            }
+
+            binaryList.Clear();
+
+            sb.Insert(8, ",");
+            sb.Insert(17, ",");
+            sb.Insert(26, ",");
+
+            binaryList.AddRange(sb.ToString().Split(','));
+            var result = new List<string>();
+
+            foreach (string value in binaryList)
+            {
+                result.Add(Convert.ToInt32(value, 2).ToString());
+            }
+
+            return string.Join(".", result) + "/" + subnet.ToString();
         }
     }
 }
