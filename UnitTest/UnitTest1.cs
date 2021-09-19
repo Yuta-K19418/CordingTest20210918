@@ -1,18 +1,11 @@
 using System;
 using Xunit;
 using CordingTest20210918;
-using Xunit.Abstractions;
 
 namespace UnitTest
 {
     public class UnitTest1
     {
-        private readonly ITestOutputHelper output;
-        public UnitTest1(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
         [Fact(DisplayName = "ê›ñ‚1")]
         public void Test1()
         {
