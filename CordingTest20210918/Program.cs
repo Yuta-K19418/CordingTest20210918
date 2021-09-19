@@ -104,7 +104,8 @@ namespace CordingTest20210918
                     {
                         LogTime = DateTime.ParseExact(values[0], format, null),
                         ServerAddress = values[1],
-                        ReactionMiliSecond = int.Parse(values[2])
+                        ReactionMiliSecond = int.Parse(values[2]),
+                        Subnet = GetSubnetAddress(values[1])
                     });
                 }
             }
@@ -138,36 +139,60 @@ namespace CordingTest20210918
             return output.ToString().TrimEnd('\r', '\n');
         }
 
+        /// <summary>
+        /// サブネットのネットワークアドレスを取得
+        /// </summary>
+        /// <param name="serverAddress">サーバアドレス</param>
+        /// <returns>サブネットのネットワークアドレス</returns>
         private static string GetSubnetAddress(string serverAddress)
         {
+            // 定数
+            const int TOTAL_BITS = 32;
+            const int NUMBER_OF_BYTES = 8;
+            const int BINARY = 2;
+
+            // 変数
             int subnet = int.Parse(serverAddress.Split('/')[1]);
             var binaryList = new List<string>();
-            foreach (string value in serverAddress.Split('/')[0].Split('.'))
-            {
-                binaryList.Add(Convert.ToString(int.Parse(value), 2).PadLeft(8, '0'));
-            }
-
-            StringBuilder sb = new StringBuilder(string.Join("", binaryList));
-            sb.Remove(subnet - 1, 32 - subnet);
-            for (int i = subnet; i < string.Join("", binaryList).Length; i++)
-            {
-                sb.Append("0");
-            }
-
-            binaryList.Clear();
-
-            sb.Insert(8, ",");
-            sb.Insert(17, ",");
-            sb.Insert(26, ",");
-
-            binaryList.AddRange(sb.ToString().Split(','));
+            var elementSb = new StringBuilder();
             var result = new List<string>();
 
+            // サーバアドレスを2進数に置き換える -> binaryList (置き換え先)
+            foreach (string value in serverAddress.Split('/')[0].Split('.'))
+            {
+                binaryList.Add(Convert.ToString(int.Parse(value), BINARY).PadLeft(NUMBER_OF_BYTES, '0'));
+            }
+
+            // ホストアドレスを作成 -> binarySb (作成先)
+            StringBuilder binarySb = new StringBuilder(string.Join("", binaryList));
+            binarySb.Remove(subnet - 1, TOTAL_BITS - subnet);
+            
+            for (int i = subnet; i < string.Join("", binaryList).Length; i++)
+            {
+                binarySb.Append("0");
+            }
+
+            // バイト数毎に分割 -> binaryList (格納先)
+            binaryList.Clear();
+            
+            for (int i = 0; i < binarySb.Length; i++)
+            {
+                elementSb.Append(binarySb[i]);
+                if (elementSb.Length == NUMBER_OF_BYTES)
+                {
+                    binaryList.Add(elementSb.ToString());
+                    elementSb.Clear();
+                }
+            }
+
+
+            // ネットワークアドレスを2進数から10進数に変換 -> result
             foreach (string value in binaryList)
             {
                 result.Add(Convert.ToInt32(value, 2).ToString());
             }
 
+            // サブネットマスク付きでネットワークアドレスを返却
             return string.Join(".", result) + "/" + subnet.ToString();
         }
     }
