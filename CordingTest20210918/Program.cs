@@ -32,7 +32,26 @@ namespace CordingTest20210918
 
             public int? ReactionMiliSecond { get; set; }
 
-            public string Subnet { get; set; }
+            public string SubnetAddress { get; set; }
+        }
+
+        private class ServerInfo
+        {
+            public string ServerAddress { get; set; }
+
+            public bool HasBroken { get; set; }
+
+            public bool IsAggregating { get; set; }
+
+            public int? PingCount { get; set; }
+
+            public DateTime? StartTime { get; set; }
+
+            public DateTime? EndTime { get; set; }
+
+            public TimeSpan? ReactionTime { get; set; }
+
+            public string SubnetAddress { get; set; }
         }
 
         /// <summary>
@@ -50,94 +69,126 @@ namespace CordingTest20210918
         {
             // 変数
             StreamReader sr = new StreamReader(@inputFilePath);
-            var startTimeDic = new Dictionary<string, DateTime>();
-            var endTimeDic = new Dictionary<string, DateTime>();
-            var brokenServerDic = new Dictionary<string, TimeSpan>();
-            var pingCountDic = new Dictionary<string, int>();
-            var readPinglist = new List<LogInfo>();
+            var logInfolist = new List<LogInfo>();
+            var serverInfoList = new List<ServerInfo>();
             var calcuratedServerAddressList = new List<string>();
-            string format = "yyyyMMddHHmmss";
-            int number;
             var output = new StringBuilder();
 
+            // ログファイルから読み込み -> readPinglist
             while (!sr.EndOfStream)
             {
                 string line = sr.ReadLine();
                 string[] values = line.Split(',');
+                string format = "yyyyMMddHHmmss";
+                int number;
 
                 // サーバーアドレスごとの件数が直近m回分以上の場合、超えた分の一番古いデータを削除
-                if (readPinglist.Where(x => x.ServerAddress == values[1])
-                                        .Select(x => x)
+                if (logInfolist.Where(logInfo => logInfo.ServerAddress == values[1])
+                                        .Select(logInfo => logInfo)
                                         .Count() >= lastNumberOfTimes)
                 {
-                    var element = readPinglist.Where(x => x.ServerAddress == values[1]).FirstOrDefault();
-                    readPinglist.Remove(element);
+                    var element = logInfolist.Where(logInfo => logInfo.ServerAddress == values[1]).FirstOrDefault();
+                    logInfolist.Remove(element);
                 }
 
-                // タイムアウトの場合
-                if (values[2] == "-")
+                logInfolist.Add(new LogInfo()
                 {
-                    if (pingCountDic.ContainsKey(values[1]))
+                    LogTime = DateTime.ParseExact(values[0], format, null),
+                    ServerAddress = values[1],
+                    ReactionMiliSecond = int.TryParse(values[2], out number) ? int.Parse(values[2]) : null,
+                    SubnetAddress = GetSubnetAddress(values[1])
+                });
+            }
+
+            foreach (var logInfo in logInfolist)
+            {
+                // 応答がある場合
+                if (logInfo.ReactionMiliSecond != null)
+                {
+                    // serverInfoListにServerAddress、SubnetAddressが一致する、集計中の場合
+                    if (serverInfoList.Where(x =>
+                                        x.ServerAddress == logInfo.ServerAddress
+                                        && x.IsAggregating
+                                        && x.SubnetAddress == logInfo.SubnetAddress)
+                                        .Any())
                     {
-                        // 回数をカウントアップ
-                        pingCountDic[values[1]]++;
+                        // 集計完了にする
+                        serverInfoList.Where(x =>
+                                        x.ServerAddress == logInfo.ServerAddress
+                                        && x.IsAggregating
+                                        && x.SubnetAddress == logInfo.SubnetAddress)
+                                        .Select(x =>
+                                        {
+                                            x.HasBroken = (x.PingCount >= timeOutCount) ? true : false;
+                                            x.IsAggregating = false;
+                                            x.EndTime = logInfo.LogTime;
+                                            x.ReactionTime = logInfo.LogTime - x.StartTime;
+                                            return x;
+                                        })
+                                        .ToList();
                     }
+                    // 該当しない場合
                     else
                     {
-                        // キーが存在しない場合は回数をセット
-                        pingCountDic.Add(values[1], 1);
-                        startTimeDic.Add(values[1], DateTime.ParseExact(values[0], format, null));
-                    }
-
-                    readPinglist.Add(new LogInfo()
-                    {
-                        LogTime = DateTime.ParseExact(values[0], format, null),
-                        ServerAddress = values[1],
-                        ReactionMiliSecond = null,
-                        Subnet = GetSubnetAddress(values[1])
-                    });
-                }
-                // 応答がある場合
-                else if (int.TryParse(values[2], out number))
-                {
-                    if (pingCountDic.ContainsKey(values[1]))
-                    {
-                        if (pingCountDic[values[1]] >= timeOutCount)
+                        serverInfoList.Add(new ServerInfo()
                         {
-                            endTimeDic.Add(values[1], DateTime.ParseExact(values[0], format, null));
-                            brokenServerDic.Add(values[1], endTimeDic[values[1]] - startTimeDic[values[1]]);
-                        }
-
-                        // 回数のカウントを削除
-                        pingCountDic.Remove(values[1]);
-                        startTimeDic.Remove(values[1]);
+                            ServerAddress = logInfo.ServerAddress,
+                            HasBroken = false,
+                            IsAggregating = false,
+                            StartTime = logInfo.LogTime,
+                            EndTime = logInfo.LogTime,
+                            ReactionTime = TimeSpan.FromMilliseconds(logInfo.ReactionMiliSecond ?? 0),
+                            SubnetAddress = logInfo.SubnetAddress
+                        });
                     }
-
-                    readPinglist.Add(new LogInfo()
+                }
+                // タイムアウトの場合
+                else
+                {
+                    // serverInfoListにServerAddress、SubnetAddressが一致する、集計中の場合
+                    if (serverInfoList.Where(x =>
+                                        x.ServerAddress == logInfo.ServerAddress
+                                        && x.IsAggregating
+                                        && x.SubnetAddress == logInfo.SubnetAddress)
+                                        .Any())
                     {
-                        LogTime = DateTime.ParseExact(values[0], format, null),
-                        ServerAddress = values[1],
-                        ReactionMiliSecond = int.Parse(values[2]),
-                        Subnet = GetSubnetAddress(values[1])
-                    });
+                        serverInfoList.Where(x =>
+                                        x.ServerAddress == logInfo.ServerAddress
+                                        && x.IsAggregating
+                                        && x.SubnetAddress == logInfo.SubnetAddress)
+                                        .Select(x => x.PingCount = (x.PingCount ?? 0) + 1)
+                                        .ToList();
+                    }
+                    // 該当しない場合
+                    else
+                    {
+                        serverInfoList.Add(new ServerInfo()
+                        {
+                            ServerAddress = logInfo.ServerAddress,
+                            IsAggregating = true,
+                            StartTime = logInfo.LogTime,
+                            PingCount = 1,
+                            SubnetAddress = logInfo.SubnetAddress
+                        });
+                    }
                 }
             }
 
-            foreach (var pair in brokenServerDic)
+            foreach (var serverInfo in serverInfoList.Where(x => x.HasBroken))
             {
-                output.Append($"故障状態のサーバアドレス：{pair.Key}, 故障期間：{pair.Value.ToString()}\r\n");
+                output.Append($"故障状態のサーバアドレス：{serverInfo.ServerAddress}, 故障期間：{serverInfo.ReactionTime}\r\n");
             }
 
             // 各サーバの過負荷状態となっている期間を出力
-            foreach (var logInfo in readPinglist)
+            foreach (var logInfo in logInfolist)
             {
                 // 過負荷状態としてまだ出力されていない場合
                 if (!calcuratedServerAddressList.Contains(logInfo.ServerAddress))
                 {
                     // 直近m回の平均応答時間 -> item.ServerAddressの合計応答時間 ÷ readPinglistのServerAddressの件数
-                    int calcuratedMiliSecond = readPinglist.Where(x => x.ServerAddress == logInfo.ServerAddress)
+                    int calcuratedMiliSecond = logInfolist.Where(x => x.ServerAddress == logInfo.ServerAddress)
                                                                             .Sum(x => x.ReactionMiliSecond ?? 0)
-                                                 / readPinglist.Where(x => x.ServerAddress == logInfo.ServerAddress).Count();
+                                                 / logInfolist.Where(x => x.ServerAddress == logInfo.ServerAddress).Count();
 
                     // 直近m回の平均応答時間がtミリ秒を超えた場合
                     if (calcuratedMiliSecond > reactionTime)
