@@ -93,7 +93,7 @@ namespace CordingTest20210918
             var subnetInfoList = new List<SubnetInfo>();
             var output = new StringBuilder();
 
-            // ログファイルから読み込み -> readPinglist
+            // ログファイルから読み込み -> logInfoList
             while (!sr.EndOfStream)
             {
                 string line = sr.ReadLine();
@@ -207,7 +207,7 @@ namespace CordingTest20210918
                 // 過負荷状態としてまだ出力されていない場合
                 if (!calcuratedServerAddressList.Contains(logInfo.ServerAddress))
                 {
-                    // 直近m回の平均応答時間 -> item.ServerAddressの合計応答時間 ÷ readPinglistのServerAddressの件数
+                    // 直近m回の平均応答時間 -> item.ServerAddressの合計応答時間 ÷ logInfoListのServerAddressの件数
                     int calcuratedMiliSecond = logInfoList.Where(x => x.ServerAddress == logInfo.ServerAddress)
                                                                             .Sum(x => x.ReactionMiliSecond ?? 0)
                                                  / logInfoList.Where(x => x.ServerAddress == logInfo.ServerAddress).Count();
