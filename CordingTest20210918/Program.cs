@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -58,6 +57,22 @@ namespace CordingTest20210918
         }
 
         /// <summary>
+        /// サブネット情報
+        /// </summary>
+        private class SubnetInfo
+        {
+            public string SubnetAddress { get; set; }
+            
+            public List<string> ServerAddressList { get; set; }
+
+            public bool HasBroken { get; set; }
+
+            public DateTime? StartTime { get; set; }
+
+            public DateTime? EndTime { get; set; }
+        }
+
+        /// <summary>
         /// 故障状態のサーバアドレスとそのサーバの故障期間を取得
         /// </summary>
         /// <param name="inputFilePath">監視ログファイル</param>
@@ -72,9 +87,10 @@ namespace CordingTest20210918
         {
             // 変数
             StreamReader sr = new StreamReader(@inputFilePath);
-            var logInfolist = new List<LogInfo>();
+            var logInfoList = new List<LogInfo>();
             var serverInfoList = new List<ServerInfo>();
             var calcuratedServerAddressList = new List<string>();
+            var subnetInfoList = new List<SubnetInfo>();
             var output = new StringBuilder();
 
             // ログファイルから読み込み -> readPinglist
@@ -86,15 +102,15 @@ namespace CordingTest20210918
                 int number;
 
                 // サーバーアドレスごとの件数が直近m回分以上の場合、超えた分の一番古いデータを削除
-                if (logInfolist.Where(logInfo => logInfo.ServerAddress == values[1])
+                if (logInfoList.Where(logInfo => logInfo.ServerAddress == values[1])
                                         .Select(logInfo => logInfo)
                                         .Count() >= lastNumberOfTimes)
                 {
-                    var element = logInfolist.Where(logInfo => logInfo.ServerAddress == values[1]).FirstOrDefault();
-                    logInfolist.Remove(element);
+                    var element = logInfoList.Where(logInfo => logInfo.ServerAddress == values[1]).FirstOrDefault();
+                    logInfoList.Remove(element);
                 }
 
-                logInfolist.Add(new LogInfo()
+                logInfoList.Add(new LogInfo()
                 {
                     LogTime = DateTime.ParseExact(values[0], format, null),
                     ServerAddress = values[1],
@@ -103,7 +119,8 @@ namespace CordingTest20210918
                 });
             }
 
-            foreach (var logInfo in logInfolist)
+            // logInfoListから故障状態のサーバアドレスとそのサーバの故障期間を集計 -> serverInfoList (集計結果)
+            foreach (var logInfo in logInfoList)
             {
                 // 応答がある場合
                 if (logInfo.ReactionMiliSecond != null)
@@ -177,21 +194,23 @@ namespace CordingTest20210918
                 }
             }
 
+            // 故障サーバ、故障期間の出力
             foreach (var serverInfo in serverInfoList.Where(x => x.HasBroken))
             {
-                output.Append($"故障状態のサーバアドレス：{serverInfo.ServerAddress}, 故障期間：{serverInfo.ReactionTime}\r\n");
+                output.Append($"故障状態のサーバアドレス：{serverInfo.ServerAddress},"
+                    + $" 故障期間：{serverInfo.ReactionTime}\r\n");
             }
 
-            // 各サーバの過負荷状態となっている期間を出力
-            foreach (var logInfo in logInfolist)
+            // 各サーバにおいて、過負荷状態となっている期間を出力
+            foreach (var logInfo in logInfoList)
             {
                 // 過負荷状態としてまだ出力されていない場合
                 if (!calcuratedServerAddressList.Contains(logInfo.ServerAddress))
                 {
                     // 直近m回の平均応答時間 -> item.ServerAddressの合計応答時間 ÷ readPinglistのServerAddressの件数
-                    int calcuratedMiliSecond = logInfolist.Where(x => x.ServerAddress == logInfo.ServerAddress)
+                    int calcuratedMiliSecond = logInfoList.Where(x => x.ServerAddress == logInfo.ServerAddress)
                                                                             .Sum(x => x.ReactionMiliSecond ?? 0)
-                                                 / logInfolist.Where(x => x.ServerAddress == logInfo.ServerAddress).Count();
+                                                 / logInfoList.Where(x => x.ServerAddress == logInfo.ServerAddress).Count();
 
                     // 直近m回の平均応答時間がtミリ秒を超えた場合
                     if (calcuratedMiliSecond > reactionTime)
@@ -206,26 +225,79 @@ namespace CordingTest20210918
                 }
             }
 
-            // サーバが全て故障しているサブネットを出力
-            var subnetWhereAllServerIsBrokenList = serverInfoList.GroupBy(grp => new
-                                                                {
-                                                                    HasBroken = grp.HasBroken,
-                                                                    SubnetAddress = grp.SubnetAddress
-                                                                })
-                                                            .Where(x => !x.Key.HasBroken)
-                                                            .Select(x => x.Key.SubnetAddress)
-                                                            .ToList();
-
-            foreach (var serverInfo in serverInfoList.GroupBy(grp => new
-                                                        {
-                                                            HasBroken = grp.HasBroken,
-                                                            SubnetAddress = grp.SubnetAddress
-                                                        }))
+            // サーバが全て故障しているサブネットアドレスを抽出 -> subnetInfoList
+            foreach (var serverInfo in serverInfoList)
             {
-                if (!subnetWhereAllServerIsBrokenList.Contains(serverInfo.Key.SubnetAddress))
+                // subnetInfoListにserverInfoのサブネットアドレスが存在しない、かつサーバが故障状態の場合
+                if (!subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
+                                     .Any() 
+                                && serverInfo.HasBroken)
                 {
-                    
+                    subnetInfoList.Add(new SubnetInfo() 
+                                                {
+                                                    ServerAddressList = new List<string>()
+                                                    {
+                                                        serverInfo.ServerAddress
+                                                    },
+                                                    SubnetAddress = serverInfo.SubnetAddress,
+                                                    StartTime = serverInfo.StartTime,
+                                                    EndTime = serverInfo.EndTime,
+                                                    HasBroken = serverInfo.HasBroken,
+                                                    
+                                                });
                 }
+                // subnetInfoListにデータがする、かつサーバが故障状態の場合
+                else if (subnetInfoList.Any() && serverInfo.HasBroken)
+                {
+                    //  StartTimeよりserverInfo.StartTimeの方が早い場合
+                    if (subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
+                                        .Select(x => x.StartTime)
+                                        .First()
+                                > serverInfo.StartTime)
+                    {
+                        subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
+                                                .Select(x => x.StartTime = serverInfo.StartTime)
+                                                .ToList();
+                    }
+
+                    // EndTimeよりserverInfo.EndTimeの方が早い場合
+                    if (subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
+                                        .Select(x => x.EndTime)
+                                        .First()
+                                > serverInfo.EndTime)
+                    {
+                        subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
+                                                .Select(x => x.EndTime = serverInfo.EndTime)
+                                                .ToList();
+                    }
+
+                    // ServerAddressListにserverInfo.ServerAddressが存在しない場合
+                    if (!subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
+                                        .Select(x => x.ServerAddressList)
+                                        .First()
+                                        .Contains(serverInfo.ServerAddress))
+                    {
+                        subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
+                                        .Select(x => x.ServerAddressList)
+                                        .First()
+                                        .Add(serverInfo.ServerAddress);
+                    }
+                }
+
+                // 故障していないサーバが存在する場合
+                if (!serverInfo.HasBroken)
+                {
+                    subnetInfoList.RemoveAll(x => x.SubnetAddress == serverInfo.SubnetAddress);
+                }
+            }
+
+            // あるサブネット内のサーバが全て故障 = サブネットにサーバが2台以上存在する場合 -> サブネットの削除
+            subnetInfoList.RemoveAll(x => x.ServerAddressList.Count < 2);
+
+            foreach (var serverInfo in subnetInfoList)
+            {
+                output.Append($"全サーバが故障しているサブネット：{serverInfo.SubnetAddress},"
+                    + $" ネットワークの故障期間：{serverInfo.EndTime - serverInfo.StartTime}\r\n");
             }
 
 

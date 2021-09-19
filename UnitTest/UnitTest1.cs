@@ -19,7 +19,7 @@ namespace UnitTest
         public void Test2()
         {
             string result = Program.OutputPeriodOfBrokenServer("./test2.txt",2, 3, 5);
-            Assert.Equal("故障状態のサーバアドレス：10.20.30.2/16, 故障期間：00:00:05\r\n"
+            Assert.Equal("故障状態のサーバアドレス：192.168.1.1/24, 故障期間：00:00:05\r\n"
                                 + "故障状態のサーバアドレス：10.20.30.1/16, 故障期間：00:00:02", result);
 
         }
@@ -39,7 +39,9 @@ namespace UnitTest
         {
             string result = Program.OutputPeriodOfBrokenServer("./test4.txt", 2, 5, 10);
             Assert.Equal("故障状態のサーバアドレス：10.20.30.1/16, 故障期間：00:03:06\r\n"
-                                + "故障状態のサーバアドレス：10.20.30.2/16, 故障期間：00:05:00", result);
+                                + "故障状態のサーバアドレス：10.20.30.2/16, 故障期間：00:05:00\r\n"
+                                + "故障状態のサーバアドレス：192.168.1.1/24, 故障期間：01:03:06\r\n"
+                                + "全サーバが故障しているサブネット：10.20.0.0/16, ネットワークの故障期間：00:03:06", result);
 
         }
     }
