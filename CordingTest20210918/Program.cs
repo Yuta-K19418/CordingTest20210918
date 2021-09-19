@@ -21,6 +21,9 @@ namespace CordingTest20210918
             Console.WriteLine(output);
         }
 
+        /// <summary>
+        /// 監視ログ情報
+        /// </summary>
         private class LogInfo
         {
             public DateTime LogTime { get; set; }
@@ -32,17 +35,27 @@ namespace CordingTest20210918
             public string Subnet { get; set; }
         }
 
+        /// <summary>
+        /// 故障状態のサーバアドレスとそのサーバの故障期間を取得
+        /// </summary>
+        /// <param name="inputFilePath">監視ログファイル</param>
+        /// <param name="timeOutCount">タイムアウト回数(N)</param>
+        /// <param name="lastNumberOfTimes">直近の回数(M)</param>
+        /// <param name="reactionTime">応答時間(tミリ秒)</param>
+        /// <returns>出力文字列</returns>
         public static string OutputPeriodOfBrokenServer(string inputFilePath,
                                                         int timeOutCount,
                                                         int lastNumberOfTimes,
                                                         int reactionTime)
         {
+            // 変数
             StreamReader sr = new StreamReader(@inputFilePath);
             var startTimeDic = new Dictionary<string, DateTime>();
             var endTimeDic = new Dictionary<string, DateTime>();
             var brokenServerDic = new Dictionary<string, TimeSpan>();
             var pingCountDic = new Dictionary<string, int>();
             var readPinglist = new List<LogInfo>();
+            var calcuratedServerAddressList = new List<string>();
             string format = "yyyyMMddHHmmss";
             int number;
             var output = new StringBuilder();
@@ -115,23 +128,26 @@ namespace CordingTest20210918
                 output.Append($"故障状態のサーバアドレス：{pair.Key}, 故障期間：{pair.Value.ToString()}\r\n");
             }
 
-            var calcuratedServerAddressList = new List<string>();
-
-            foreach (var item in readPinglist)
+            // 各サーバの過負荷状態となっている期間を出力
+            foreach (var logInfo in readPinglist)
             {
-                if (!calcuratedServerAddressList.Contains(item.ServerAddress))
+                // 過負荷状態としてまだ出力されていない場合
+                if (!calcuratedServerAddressList.Contains(logInfo.ServerAddress))
                 {
-                    int calcuratedMiliSecond = readPinglist.Where(x => x.ServerAddress == item.ServerAddress)
-                                                                            .Sum(x => x?.ReactionMiliSecond)
-                                         / readPinglist.Where(x => x.ServerAddress == item.ServerAddress).Count() ?? 0;
+                    // 直近m回の平均応答時間 -> item.ServerAddressの合計応答時間 ÷ readPinglistのServerAddressの件数
+                    int calcuratedMiliSecond = readPinglist.Where(x => x.ServerAddress == logInfo.ServerAddress)
+                                                                            .Sum(x => x.ReactionMiliSecond ?? 0)
+                                                 / readPinglist.Where(x => x.ServerAddress == logInfo.ServerAddress).Count();
 
+                    // 直近m回の平均応答時間がtミリ秒を超えた場合
                     if (calcuratedMiliSecond > reactionTime)
                     {
-                        output.Append(item.ServerAddress
+                        output.Append(logInfo.ServerAddress
                                         + "(過負荷状態期間)："
                                         + calcuratedMiliSecond
                                         + "ミリ秒\r\n");
-                        calcuratedServerAddressList.Add(item.ServerAddress);
+                        // 出力したServerAddressはcalcuratedServerAddressListへ追加
+                        calcuratedServerAddressList.Add(logInfo.ServerAddress);
                     }
                 }
             }
@@ -184,7 +200,6 @@ namespace CordingTest20210918
                     elementSb.Clear();
                 }
             }
-
 
             // ネットワークアドレスを2進数から10進数に変換 -> result
             foreach (string value in binaryList)
