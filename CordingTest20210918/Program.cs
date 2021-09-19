@@ -35,6 +35,9 @@ namespace CordingTest20210918
             public string SubnetAddress { get; set; }
         }
 
+        /// <summary>
+        /// サーバ情報
+        /// </summary>
         private class ServerInfo
         {
             public string ServerAddress { get; set; }
@@ -203,6 +206,29 @@ namespace CordingTest20210918
                 }
             }
 
+            // サーバが全て故障しているサブネットを出力
+            var subnetWhereAllServerIsBrokenList = serverInfoList.GroupBy(grp => new
+                                                                {
+                                                                    HasBroken = grp.HasBroken,
+                                                                    SubnetAddress = grp.SubnetAddress
+                                                                })
+                                                            .Where(x => !x.Key.HasBroken)
+                                                            .Select(x => x.Key.SubnetAddress)
+                                                            .ToList();
+
+            foreach (var serverInfo in serverInfoList.GroupBy(grp => new
+                                                        {
+                                                            HasBroken = grp.HasBroken,
+                                                            SubnetAddress = grp.SubnetAddress
+                                                        }))
+            {
+                if (!subnetWhereAllServerIsBrokenList.Contains(serverInfo.Key.SubnetAddress))
+                {
+                    
+                }
+            }
+
+
             return output.ToString().TrimEnd('\r', '\n');
         }
 
@@ -232,7 +258,7 @@ namespace CordingTest20210918
 
             // ホストアドレスを作成 -> binarySb (作成先)
             StringBuilder binarySb = new StringBuilder(string.Join("", binaryList));
-            binarySb.Remove(subnet - 1, TOTAL_BITS - subnet);
+            binarySb.Remove(subnet, TOTAL_BITS - subnet);
             
             for (int i = subnet; i < string.Join("", binaryList).Length; i++)
             {

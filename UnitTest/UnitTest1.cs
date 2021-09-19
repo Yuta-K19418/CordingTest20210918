@@ -40,5 +40,14 @@ namespace UnitTest
                                 + "10.20.30.1/16(過負荷状態期間)：174ミリ秒", result);
 
         }
+
+        [Fact(DisplayName = "設問4")]
+        public void Test4()
+        {
+            string result = Program.OutputPeriodOfBrokenServer("./test4.txt", 2, 5, 10);
+            Assert.Equal("故障状態のサーバアドレス：10.20.30.1/16, 故障期間：00:03:06\r\n"
+                                + "故障状態のサーバアドレス：10.20.30.2/16, 故障期間：00:05:00", result);
+
+        }
     }
 }
