@@ -86,7 +86,7 @@ namespace CordingTest20210918
                                                         int reactionTime)
         {
             // 変数
-            StreamReader sr = new StreamReader(@inputFilePath);
+            var sr = new StreamReader(@inputFilePath);
             var logInfoList = new List<LogInfo>();
             var serverInfoList = new List<ServerInfo>();
             var calcuratedServerAddressList = new List<string>();
@@ -323,13 +323,13 @@ namespace CordingTest20210918
             var result = new List<string>();
 
             // サーバアドレスを2進数に置き換える -> binaryList (置き換え先)
-            foreach (string value in serverAddress.Split('/')[0].Split('.'))
+            foreach (string part in serverAddress.Split('/')[0].Split('.'))
             {
-                binaryList.Add(Convert.ToString(int.Parse(value), BINARY).PadLeft(NUMBER_OF_BYTES, '0'));
+                binaryList.Add(Convert.ToString(int.Parse(part), BINARY).PadLeft(NUMBER_OF_BYTES, '0'));
             }
 
             // ホストアドレスを作成 -> binarySb (作成先)
-            StringBuilder binarySb = new StringBuilder(string.Join("", binaryList));
+            var binarySb = new StringBuilder(string.Join("", binaryList));
             binarySb.Remove(subnet, TOTAL_BITS - subnet);
             
             for (int i = subnet; i < string.Join("", binaryList).Length; i++)
@@ -351,9 +351,9 @@ namespace CordingTest20210918
             }
 
             // ネットワークアドレスを2進数から10進数に変換 -> result
-            foreach (string value in binaryList)
+            foreach (string binaryElement in binaryList)
             {
-                result.Add(Convert.ToInt32(value, 2).ToString());
+                result.Add(Convert.ToInt32(binaryElement, 2).ToString());
             }
 
             // サブネットマスク付きでネットワークアドレスを返却
