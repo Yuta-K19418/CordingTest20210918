@@ -282,6 +282,7 @@ namespace CordingTest20210918
                                         .First()
                                 > serverInfo.StartTime)
                     {
+                        // StartTimeを更新
                         subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
                                                 .Select(x => x.StartTime = serverInfo.StartTime)
                                                 .ToList();
@@ -293,6 +294,7 @@ namespace CordingTest20210918
                                         .First()
                                 > serverInfo.EndTime)
                     {
+                        // EndTimeを更新
                         subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
                                                 .Select(x => x.EndTime = serverInfo.EndTime)
                                                 .ToList();
@@ -304,6 +306,7 @@ namespace CordingTest20210918
                                         .First()
                                         .Contains(serverInfo.ServerAddress))
                     {
+                        // ServerAddressListにServerAddressを追加
                         subnetInfoList.Where(x => x.SubnetAddress == serverInfo.SubnetAddress)
                                         .Select(x => x.ServerAddressList)
                                         .First()
@@ -314,6 +317,7 @@ namespace CordingTest20210918
                 // 故障していないサーバが存在する場合
                 if (!serverInfo.HasBroken)
                 {
+                    // subnetInfoListから該当するSubnetAddressを削除
                     subnetInfoList.RemoveAll(x => x.SubnetAddress == serverInfo.SubnetAddress);
                 }
             }
@@ -321,6 +325,7 @@ namespace CordingTest20210918
             // あるサブネット内のサーバが全て故障 = サブネットにサーバが2台以上存在する場合 -> サブネットの削除
             subnetInfoList.RemoveAll(x => x.ServerAddressList.Count < 2);
 
+            // 各サブネット毎にネットワークの故障期間を出力
             foreach (var serverInfo in subnetInfoList)
             {
                 output.Append($"全サーバが故障しているサブネット：{serverInfo.SubnetAddress},"
