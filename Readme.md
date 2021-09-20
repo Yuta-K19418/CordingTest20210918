@@ -2,7 +2,7 @@
 CordingTest20210918.exeは[.NETCoreSDK](https://dotnet.microsoft.com/download/dotnet/5.0)のインストール後、  
 Windows、Linux、MacOSで使用可能です。  
 GitHubからclone後CordingTest20210918配下で
-```
+```tcl
 $ cd CordingTest20210918
 $ dotnet restore
   復元対象のプロジェクトを決定しています...
@@ -29,7 +29,8 @@ Copyright (C) Microsoft Corporation.All rights reserved.
 ``${Cloneディレクトリ}/CordingTest20210918/CordingTest20210918/bin/Release/net5.0``配下に  
 ``CordingTest20210918``というファイルが作成されているので、実行します。
 
-```
+以下例
+```tcl
 $ ./CordingTest20210918
 監視ログファイルのパスを入力してください。
 /app/CordingTest20210918/UnitTest/test4.txt
@@ -47,4 +48,8 @@ N回以上連続してタイムアウトした場合のタイムアウト回数(
 
 # プログラム構成
 以下のような構成となっています。
+コマンドラインで受け取ったパラメータをもとに、  
+``Main``メソッドから設問1~設問4までの要件に応じて出力文字列を返却する  
+``OutputPeriodOfBrokenServer``メソッドを呼び出します。  
+
 ![構成図](./img/CordingTest20210918.png)
