@@ -3,17 +3,36 @@ CordingTest20210918.exeは[.NETCoreSDK](https://dotnet.microsoft.com/download/do
 Windows、Linux、MacOSで使用可能です。  
 GitHubからclone後CordingTest20210918配下で
 ```
-dotnet restore
-dotnet build
+$ cd CordingTest20210918
+$ dotnet restore
+  復元対象のプロジェクトを決定しています...
+  ${Cloneディレクトリ}/CordingTest20210918/CordingTest20210918/CordingTest20210918.csproj を復元しました (91 ms)。
+  ${Cloneディレクトリ}/CordingTest20210918/UnitTest/UnitTest.csproj を復元しました (623 ms)。
+$ dotnet build --configuration Release
+.NET 向け Microsoft (R) Build Engine バージョン 16.11.0+0538acc04
+Copyright (C) Microsoft Corporation.All rights reserved.
+
+  復元対象のプロジェクトを決定しています...
+  復元対象のすべてのプロジェクトは最新です。
+  CordingTest20210918 -> ${Cloneディレクトリ}/CordingTest20210918/CordingTest20210918/bin/Release/net5.0/CordingTest20210918.dll
+  UnitTest -> ${Cloneディレクトリ}/CordingTest20210918/UnitTest/bin/Release/net5.0/UnitTest.dll
+
+ビルドに成功しました。
+    0 個の警告
+    0 エラー
+
+経過時間 00:00:02.65
 ```
-を実行します。
+上記のように``dotnet restore``、``dotnet build --configuration Release``を実行します。
 
 # 使用方法
+``${Cloneディレクトリ}/CordingTest20210918/CordingTest20210918/bin/Release/net5.0``配下に  
+``CordingTest20210918``というファイルが作成されているので、実行します。
 
 ```
->CordingTest20210918.exe
+$ ./CordingTest20210918
 監視ログファイルのパスを入力してください。
-D:\C#\C#project\source\repos\CordingTest20210918\UnitTest\test4.txt
+/app/CordingTest20210918/UnitTest/test4.txt
 N回以上連続してタイムアウトした場合のタイムアウト回数(N)を入力してください。
 2
 直近m回の平均応答時間がtミリ秒を超えた場合の直近回数(m)を入力してください。
