@@ -32,6 +32,8 @@ namespace CordingTest20210918
             public int? ReactionMiliSecond { get; set; }
 
             public string SubnetAddress { get; set; }
+
+            public bool ShouldExclude { get; set; }
         }
 
         /// <summary>
@@ -101,21 +103,23 @@ namespace CordingTest20210918
                 string format = "yyyyMMddHHmmss";
                 int number;
 
-                // サーバーアドレスごとの件数が直近m回分以上の場合、超えた分の一番古いデータを削除
-                if (logInfoList.Where(logInfo => logInfo.ServerAddress == values[1])
-                                        .Select(logInfo => logInfo)
+                // サーバーアドレスごとの件数が直近m回分以上の場合、超えた分の一番古いデータを対象外にする
+                if (logInfoList.Where(x => x.ServerAddress == values[1])
+                                        .Select(x => x)
                                         .Count() >= lastNumberOfTimes)
                 {
-                    var element = logInfoList.Where(logInfo => logInfo.ServerAddress == values[1]).FirstOrDefault();
-                    logInfoList.Remove(element);
-                }
+                    logInfoList.Where(x => x.ServerAddress == values[1])
+                                .Select(x => x.ShouldExclude == true)
+                                .ToList();
+}
 
                 logInfoList.Add(new LogInfo()
                 {
                     LogTime = DateTime.ParseExact(values[0], format, null),
                     ServerAddress = values[1],
                     ReactionMiliSecond = int.TryParse(values[2], out number) ? int.Parse(values[2]) : null,
-                    SubnetAddress = GetSubnetAddress(values[1])
+                    SubnetAddress = GetSubnetAddress(values[1]),
+                    ShouldExclude = false
                 });
             }
 
@@ -202,7 +206,8 @@ namespace CordingTest20210918
             }
 
             // 各サーバにおいて、過負荷状態となっている期間を出力
-            foreach (var logInfo in logInfoList)
+            // (直近m回なので、logInfoListにおいてShouldExcludeがtrueのものを対象外とする)
+            foreach (var logInfo in logInfoList.Where(x => !x.ShouldExclude))
             {
                 // 過負荷状態としてまだ出力されていない場合
                 if (!calcuratedServerAddressList.Contains(logInfo.ServerAddress))
