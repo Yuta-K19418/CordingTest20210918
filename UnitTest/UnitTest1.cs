@@ -7,77 +7,77 @@ namespace UnitTest
     public class UnitTest1
     {
 
-        [Fact(DisplayName = "ƒtƒ@ƒCƒ‹ƒpƒX‚ª—LŒø")]
+        [Fact(DisplayName = "ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ãŒæœ‰åŠ¹")]
         public void FilePathIsValid()
         {
             bool result = Program.InputFilePathIsValid(@"D:\C#\C#project\source\repos\CordingTest20210918\UnitTest\test1.txt");
             Assert.True(result);
         }
 
-        [Fact(DisplayName = "ƒtƒ@ƒCƒ‹ƒpƒX‚ª–³Œø")]
+        [Fact(DisplayName = "ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ãŒç„¡åŠ¹")]
         public void FilePathIsInvalid()
         {
             bool result = Program.InputFilePathIsValid(@"D:\C#\aaaa.txt");
             Assert.False(result);
         }
 
-        [Fact(DisplayName = "³‚Ì”š‚Ìƒpƒ‰ƒ[ƒ^")]
+        [Fact(DisplayName = "æ­£ã®æ•°å­—ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿")]
         public void InputParamterIsValid()
         {
             bool result = Program.InputIsValid("1");
             Assert.True(result);
         }
 
-        [Fact(DisplayName = "•‰‚Ì”š‚Ìƒpƒ‰ƒ[ƒ^")]
+        [Fact(DisplayName = "è² ã®æ•°å­—ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿")]
         public void InputParamterIsInvalid1()
         {
             bool result = Program.InputIsValid("-1");
             Assert.False(result);
         }
 
-        [Fact(DisplayName = "”šˆÈŠO‚Ìƒpƒ‰ƒ[ƒ^")]
+        [Fact(DisplayName = "æ•°å­—ä»¥å¤–ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿")]
         public void InputParamterIsInvalid2()
         {
-            bool result = Program.InputIsValid("‚ ");
+            bool result = Program.InputIsValid("ã‚");
             Assert.False(result);
         }
 
-        [Fact(DisplayName = "İ–â1")]
+        [Fact(DisplayName = "è¨­å•1")]
         public void Test1()
         {
             string result = Program.OutputPeriodOfBrokenServer("./test1.txt", 1, 10, 500);
-            Assert.Equal("ŒÌáó‘Ô‚ÌƒT[ƒoƒAƒhƒŒƒXF10.20.30.2/16, ŒÌáŠúŠÔF00:01:00\r\n"
-                                + "ŒÌáó‘Ô‚ÌƒT[ƒoƒAƒhƒŒƒXF10.20.30.1/16, ŒÌáŠúŠÔF00:01:06", result);
+            Assert.Equal("æ•…éšœçŠ¶æ…‹ã®ã‚µãƒ¼ãƒã‚¢ãƒ‰ãƒ¬ã‚¹ï¼š10.20.30.2/16, æ•…éšœæœŸé–“ï¼š00:01:00\r\n"
+                                + "æ•…éšœçŠ¶æ…‹ã®ã‚µãƒ¼ãƒã‚¢ãƒ‰ãƒ¬ã‚¹ï¼š10.20.30.1/16, æ•…éšœæœŸé–“ï¼š00:01:06", result);
 
         }
 
-        [Fact(DisplayName = "İ–â2")]
+        [Fact(DisplayName = "è¨­å•2")]
         public void Test2()
         {
             string result = Program.OutputPeriodOfBrokenServer("./test2.txt",2, 3, 5);
-            Assert.Equal("ŒÌáó‘Ô‚ÌƒT[ƒoƒAƒhƒŒƒXF10.20.30.1/16, ŒÌáŠúŠÔF00:00:04\r\n"
-                                + "ŒÌáó‘Ô‚ÌƒT[ƒoƒAƒhƒŒƒXF192.168.1.1/24, ŒÌáŠúŠÔF00:00:05", result);
+            Assert.Equal("æ•…éšœçŠ¶æ…‹ã®ã‚µãƒ¼ãƒã‚¢ãƒ‰ãƒ¬ã‚¹ï¼š10.20.30.1/16, æ•…éšœæœŸé–“ï¼š00:00:04\r\n"
+                                + "æ•…éšœçŠ¶æ…‹ã®ã‚µãƒ¼ãƒã‚¢ãƒ‰ãƒ¬ã‚¹ï¼š192.168.1.1/24, æ•…éšœæœŸé–“ï¼š00:00:05", result);
 
         }
 
-        [Fact(DisplayName = "İ–â3")]
+        [Fact(DisplayName = "è¨­å•3")]
         public void Test3()
         {
             string result = Program.OutputPeriodOfBrokenServer("./test3.txt", 2, 3, 10);
-            Assert.Equal("ŒÌáó‘Ô‚ÌƒT[ƒoƒAƒhƒŒƒXF10.20.30.2/16, ŒÌáŠúŠÔF00:05:00\r\n"
-                                + "10.20.30.1/16(‰ß•‰‰×ó‘ÔŠúŠÔ)F131ƒ~ƒŠ•b\r\n"
-                                + "192.168.1.1/24(‰ß•‰‰×ó‘ÔŠúŠÔ)F11ƒ~ƒŠ•b", result);
+            Assert.Equal("æ•…éšœçŠ¶æ…‹ã®ã‚µãƒ¼ãƒã‚¢ãƒ‰ãƒ¬ã‚¹ï¼š10.20.30.2/16, æ•…éšœæœŸé–“ï¼š00:05:00\r\n"
+                                + "10.20.30.1/16(éè² è·çŠ¶æ…‹æœŸé–“)ï¼š131ãƒŸãƒªç§’\r\n"
+                                + "192.168.1.1/24(éè² è·çŠ¶æ…‹æœŸé–“)ï¼š11ãƒŸãƒªç§’", result);
 
         }
 
-        [Fact(DisplayName = "İ–â4")]
+        [Fact(DisplayName = "è¨­å•4")]
         public void Test4()
         {
             string result = Program.OutputPeriodOfBrokenServer("./test4.txt", 2, 5, 10);
-            Assert.Equal("ŒÌáó‘Ô‚ÌƒT[ƒoƒAƒhƒŒƒXF10.20.30.1/16, ŒÌáŠúŠÔF00:03:06\r\n"
-                                + "ŒÌáó‘Ô‚ÌƒT[ƒoƒAƒhƒŒƒXF10.20.30.2/16, ŒÌáŠúŠÔF00:05:00\r\n"
-                                + "ŒÌáó‘Ô‚ÌƒT[ƒoƒAƒhƒŒƒXF192.168.1.1/24, ŒÌáŠúŠÔF01:03:06\r\n"
-                                + "‘SƒT[ƒo‚ªŒÌá‚µ‚Ä‚¢‚éƒTƒuƒlƒbƒgF10.20.0.0/16, ƒlƒbƒgƒ[ƒN‚ÌŒÌáŠúŠÔF00:03:06", result);
+            Assert.Equal("æ•…éšœçŠ¶æ…‹ã®ã‚µãƒ¼ãƒã‚¢ãƒ‰ãƒ¬ã‚¹ï¼š10.20.30.1/16, æ•…éšœæœŸé–“ï¼š00:03:06\r\n"
+                                + "æ•…éšœçŠ¶æ…‹ã®ã‚µãƒ¼ãƒã‚¢ãƒ‰ãƒ¬ã‚¹ï¼š10.20.30.2/16, æ•…éšœæœŸé–“ï¼š00:05:00\r\n"
+                                + "æ•…éšœçŠ¶æ…‹ã®ã‚µãƒ¼ãƒã‚¢ãƒ‰ãƒ¬ã‚¹ï¼š192.168.1.1/24, æ•…éšœæœŸé–“ï¼š01:03:06\r\n"
+                                + "å…¨ã‚µãƒ¼ãƒãŒæ•…éšœã—ã¦ã„ã‚‹ã‚µãƒ–ãƒãƒƒãƒˆï¼š10.20.0.0/16, ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã®æ•…éšœæœŸé–“ï¼š00:03:06", result);
 
         }
     }
