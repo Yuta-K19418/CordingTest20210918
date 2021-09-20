@@ -10,10 +10,62 @@ namespace CordingTest20210918
     {
         public static void Main(string[] args)
         {
-            int timeOutCount = Int32.Parse(args[1]);
-            int lastNumberOfTimes = Int32.Parse(args[2]);
-            int reactionTime = Int32.Parse(args[3]);
-            string output = OutputPeriodOfBrokenServer(args[0],
+            Console.WriteLine("監視ログファイルのパスを入力してください。");
+            string inputFilePath = @Console.ReadLine();
+
+            // パラメータが有効かどうかの確認
+            if (!InputFilePathIsValid(inputFilePath))
+            {
+                Console.WriteLine("ファイルパスが不正です。");
+                return;
+            }
+
+            Console.WriteLine("N回以上連続してタイムアウトした場合のタイムアウト回数(N)を入力してください。");
+            string timeOutCountString = Console.ReadLine();
+            int timeOutCount = 0;
+
+            // パラメータが有効かどうかの確認
+            if (!InputIsValid(timeOutCountString))
+            {
+                Console.WriteLine("パラメータが不正です。");
+                return;
+            }
+            else
+            {
+                timeOutCount = Int32.Parse(timeOutCountString);
+            }
+
+            Console.WriteLine("直近m回の平均応答時間がtミリ秒を超えた場合の直近回数(m)を入力してください。");
+            string lastNumberOfTimesString = Console.ReadLine();
+            int lastNumberOfTimes = 0;
+
+            // パラメータが有効かどうかの確認
+            if (!InputIsValid(lastNumberOfTimesString))
+            {
+                Console.WriteLine("パラメータが不正です。");
+                return;
+            }
+            else
+            {
+                lastNumberOfTimes = Int32.Parse(lastNumberOfTimesString);
+            }
+
+            Console.WriteLine("直近m回の平均応答時間がtミリ秒を超えた場合のミリ秒(t)を入力してください。");
+            string reactionTimeString = Console.ReadLine();
+            int reactionTime = 0;
+
+            // パラメータが有効かどうかの確認
+            if (!InputIsValid(reactionTimeString))
+            {
+                Console.WriteLine("パラメータが不正です。");
+                return;
+            }
+            else
+            {
+                reactionTime = Int32.Parse(reactionTimeString);
+            }
+
+            string output = OutputPeriodOfBrokenServer(inputFilePath,
                                                         timeOutCount,
                                                         lastNumberOfTimes,
                                                         reactionTime);
@@ -21,63 +73,30 @@ namespace CordingTest20210918
         }
 
         /// <summary>
-        /// 監視ログ情報
+        /// 監視ログファイルが存在するか
         /// </summary>
-        private class LogInfo
+        /// <param name="inputFilePath">監視ログファイルパス</param>
+        /// <returns>Yes/No</returns>
+        public static bool InputFilePathIsValid(string inputFilePath)
         {
-            public DateTime LogTime { get; set; }
-
-            public string ServerAddress { get; set; }
-
-            public int? ReactionMiliSecond { get; set; }
-
-            public string SubnetAddress { get; set; }
-
-            public bool ShouldExclude { get; set; }
+            return File.Exists(inputFilePath) ? true : false;
         }
 
         /// <summary>
-        /// サーバ情報
+        /// 入力文字列が有効か
         /// </summary>
-        private class ServerInfo
+        /// <param name="input">入力文字列</param>
+        /// <returns>Yes/No</returns>
+        public static bool InputIsValid(string input)
         {
-            public string ServerAddress { get; set; }
-
-            public bool HasBroken { get; set; }
-
-            public bool IsAggregating { get; set; }
-
-            public int? PingCount { get; set; }
-
-            public DateTime? StartTime { get; set; }
-
-            public DateTime? EndTime { get; set; }
-
-            public TimeSpan? ReactionTime { get; set; }
-
-            public string SubnetAddress { get; set; }
-        }
-
-        /// <summary>
-        /// サブネット情報
-        /// </summary>
-        private class SubnetInfo
-        {
-            public string SubnetAddress { get; set; }
-            
-            public List<string> ServerAddressList { get; set; }
-
-            public bool HasBroken { get; set; }
-
-            public DateTime? StartTime { get; set; }
-
-            public DateTime? EndTime { get; set; }
+            int number;
+            return int.TryParse(input, out number) && number >= 0 ? true : false;
         }
 
         /// <summary>
         /// 故障状態のサーバアドレスとそのサーバの故障期間を取得
         /// </summary>
-        /// <param name="inputFilePath">監視ログファイル</param>
+        /// <param name="inputFilePath">監視ログファイルパス</param>
         /// <param name="timeOutCount">タイムアウト回数(N)</param>
         /// <param name="lastNumberOfTimes">直近の回数(M)</param>
         /// <param name="reactionTime">応答時間(tミリ秒)</param>

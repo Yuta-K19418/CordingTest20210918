@@ -6,6 +6,42 @@ namespace UnitTest
 {
     public class UnitTest1
     {
+
+        [Fact(DisplayName = "ファイルパスが有効")]
+        public void FilePathIsValid()
+        {
+            bool result = Program.InputFilePathIsValid(@"D:\C#\C#project\source\repos\CordingTest20210918\UnitTest\test1.txt");
+            Assert.True(result);
+        }
+
+        [Fact(DisplayName = "ファイルパスが無効")]
+        public void FilePathIsInvalid()
+        {
+            bool result = Program.InputFilePathIsValid(@"D:\C#\aaaa.txt");
+            Assert.False(result);
+        }
+
+        [Fact(DisplayName = "正の数字のパラメータ")]
+        public void InputParamterIsValid()
+        {
+            bool result = Program.InputIsValid("1");
+            Assert.True(result);
+        }
+
+        [Fact(DisplayName = "負の数字のパラメータ")]
+        public void InputParamterIsInvalid1()
+        {
+            bool result = Program.InputIsValid("-1");
+            Assert.False(result);
+        }
+
+        [Fact(DisplayName = "数字以外のパラメータ")]
+        public void InputParamterIsInvalid2()
+        {
+            bool result = Program.InputIsValid("あ");
+            Assert.False(result);
+        }
+
         [Fact(DisplayName = "設問1")]
         public void Test1()
         {
