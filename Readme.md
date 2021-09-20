@@ -1,5 +1,5 @@
 # 動作環境
-CordingTest20210918.exeは[.NETCoreSDK](https://dotnet.microsoft.com/download/dotnet/5.0)のインストール後、  
+CordingTest20210918は[.NETCoreSDK](https://dotnet.microsoft.com/download/dotnet/5.0)のインストール後、  
 Windows、Linux、MacOSで使用可能です。  
 GitHubからclone後CordingTest20210918配下で
 ```tcl
