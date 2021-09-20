@@ -128,9 +128,9 @@ namespace CordingTest20210918
                                         .Count() >= lastNumberOfTimes)
                 {
                     logInfoList.Where(x => x.ServerAddress == values[1])
-                                .Select(x => x.ShouldExclude == true)
-                                .ToList();
-}
+                                .Select(x => x)
+                                .First(x => x.ShouldExclude = true);
+                }
 
                 logInfoList.Add(new LogInfo()
                 {
@@ -232,9 +232,12 @@ namespace CordingTest20210918
                 if (!calcuratedServerAddressList.Contains(logInfo.ServerAddress))
                 {
                     // 直近m回の平均応答時間 -> item.ServerAddressの合計応答時間 ÷ logInfoListのServerAddressの件数
-                    int calcuratedMiliSecond = logInfoList.Where(x => x.ServerAddress == logInfo.ServerAddress)
+                    int calcuratedMiliSecond = logInfoList.Where(x => x.ServerAddress == logInfo.ServerAddress
+                                                                        && !x.ShouldExclude)
                                                                             .Sum(x => x.ReactionMiliSecond ?? 0)
-                                                 / logInfoList.Where(x => x.ServerAddress == logInfo.ServerAddress).Count();
+                                                 / logInfoList.Where(x => x.ServerAddress == logInfo.ServerAddress
+                                                                        && !x.ShouldExclude)
+                                                                .Count();
 
                     // 直近m回の平均応答時間がtミリ秒を超えた場合
                     if (calcuratedMiliSecond > reactionTime)
