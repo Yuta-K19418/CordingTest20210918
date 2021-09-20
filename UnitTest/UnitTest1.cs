@@ -10,14 +10,14 @@ namespace UnitTest
         [Fact(DisplayName = "ファイルパスが有効")]
         public void FilePathIsValid()
         {
-            bool result = Program.InputFilePathIsValid(@"D:\C#\C#project\source\repos\CordingTest20210918\UnitTest\test1.txt");
+            bool result = Program.InputFilePathIsValid("./test1.txt");
             Assert.True(result);
         }
 
         [Fact(DisplayName = "ファイルパスが無効")]
         public void FilePathIsInvalid()
         {
-            bool result = Program.InputFilePathIsValid(@"D:\C#\aaaa.txt");
+            bool result = Program.InputFilePathIsValid(@"./aaaa.txt");
             Assert.False(result);
         }
 
